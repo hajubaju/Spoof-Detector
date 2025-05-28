@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Audio Deepfake Detection</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
+    .error { color: red; }
+    .result { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Audio Deepfake Detection</h1>
+
+  <!-- Display server-side messages (errors) -->
+  {% if message %}
+    <p class="error">{{ message }}</p>
+  {% endif %}
+
+  <!-- Display prediction result -->
+  {% if label %}
+    <div class="result">
+      <h2>Result</h2>
+      <p><strong>Label:</strong> {{ label }}</p>
+      <p><strong>Confidence:</strong> {{ confidence }}%</p>
+    </div>
+  {% endif %}
+
+  <hr>
+
+  <!-- Upload form posts to /predict -->
+  <form action="/predict" method="POST" enctype="multipart/form-data">
+    <label>
+      Select a file:
+      <!-- 🟢 FIXED: Add accept="audio/*" to show all audio files in dialog -->
+      <input type="file" name="audio_file" accept=".wav,.webm,audio/*" required>
+    </label>
+    <button type="submit">Upload & Analyze</button>
+  </form>
+
+  <hr>
+
+  <!-- In-browser recorder -->
+  <h2>Or Record
