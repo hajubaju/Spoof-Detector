@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Deepfake Detection Result</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
+    .result-box {
+      padding: 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .real {
+      background-color: #e0ffe0;
+      border: 2px solid #00b300;
+      color: #006600;
+    }
+    .fake {
+      background-color: #ffe0e0;
+      border: 2px solid #cc0000;
+      color: #990000;
+    }
+    .confidence {
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prediction Result</h1>
+
+  {% if label %}
+    <div class="result-box {% if label == 'Fake' %}fake{% else %}real{% endif %}">
+      <strong>This audio is detected as: {{ label }}</strong>
+      <div class="confidence">Confidence: {{ confidence }}%</div>
+    </div>
+  {% else %}
+    <p class="error">No result available.</p>
+  {% endif %}
+
+  <p style="margin-top: 2rem;">
+    <a href="/">← Go Back</a>
+  </p>
+</body>
+</html>
