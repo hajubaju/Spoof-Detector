@@ -2,46 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Deepfake Detection Result</title>
+  <title>Audio Deepfake Detection</title>
   <style>
     body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
-    .result-box {
-      padding: 1.5rem;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 1.2rem;
-    }
-    .real {
-      background-color: #e0ffe0;
-      border: 2px solid #00b300;
-      color: #006600;
-    }
-    .fake {
-      background-color: #ffe0e0;
-      border: 2px solid #cc0000;
-      color: #990000;
-    }
-    .confidence {
-      font-size: 0.95rem;
-      margin-top: 0.5rem;
-      color: #555;
-    }
+    .error { color: red; }
+    .result { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
-  <h1>Prediction Result</h1>
+  <h1>Audio Deepfake Detection</h1>
 
-  {% if label %}
-    <div class="result-box {% if label == 'Fake' %}fake{% else %}real{% endif %}">
-      <strong>This audio is detected as: {{ label }}</strong>
-      <div class="confidence">Confidence: {{ confidence }}%</div>
-    </div>
-  {% else %}
-    <p class="error">No result available.</p>
+  <!-- Display server-side messages (errors) -->
+  {% if message %}
+    <p class="error">{{ message }}</p>
   {% endif %}
 
-  <p style="margin-top: 2rem;">
-    <a href="/">← Go Back</a>
-  </p>
-</body>
-</html>
+  <!-- Display prediction result -->
+  {% if label %}
+    <div class="result">
+      <h2>Result</h2>
+      <p><strong>Label:</strong> {{ label }}</p>
+      <p><strong>Confidence:</strong> {{ confidence }}%</p>
+    </div>
+  {% endif %}
+
+  <hr>
+
+  <!-- Upload form posts to /predict -->
+  <form action="/predict" method="POST" enctype="multipart/form-data">
+    <label>
+      Select a file:
+      <!-- 🟢 FIXED: Add accept="audio/*" to show all audio files in dialog -->
+      <input type="file" name="audio_file" accept=".wav,.webm,audio/*" required>
+    </label>
+    <button type="submit">Upload & Analyze</button>
+  </form>
+
+  <hr>
+
+  <!-- In-browser recorder -->
+  <h2>Or Record
