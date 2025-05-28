@@ -22,7 +22,8 @@ model_dict = joblib.load("dnn_model.pkl")
 
 # Rebuild model from config and set weights
 model = Sequential.from_config(model_dict["config"])
-model.set_weights(model_dict["weights"])
+weights = [np.array(w) for w in model_dict["weights"]]
+model.set_weights(weights)
 print("Model loaded successfully!")
 
 # ─── FEATURE EXTRACTION ─────────────────────────────────────────────────────────
