@@ -1,44 +1,87 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Audio Deepfake Detection</title>
+  <meta charset="UTF-8">
+  <title>Audio Deepfake Detector</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
-    .error { color: red; }
-    .result { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ccc; }
+    body { background: #f9f9f9; padding: 40px; }
+    .recorder { margin-top: 20px; }
+    audio { margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Audio Deepfake Detection</h1>
+  <div class="container text-center">
+    <h1 class="mb-4">🎙 Deepfake Audio Detector</h1>
 
-  <!-- Display server-side messages (errors) -->
-  {% if message %}
-    <p class="error">{{ message }}</p>
-  {% endif %}
+    {% if message %}
+      <div class="alert alert-warning">{{ message }}</div>
+    {% endif %}
 
-  <!-- Display prediction result -->
-  {% if label %}
-    <div class="result">
-      <h2>Result</h2>
-      <p><strong>Label:</strong> {{ label }}</p>
-      <p><strong>Confidence:</strong> {{ confidence }}%</p>
-    </div>
-  {% endif %}
+    <form method="POST" action="/predict" enctype="multipart/form-data">
+      <div class="mb-3">
+        <input class="form-control" type="file" name="audio_file" accept=".wav,.flac,.webm" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Upload & Analyze</button>
+    </form>
 
-  <hr>
+    <div class="recorder">
+      <h5>Or Record Live:</h5>
+      <button class="btn btn-danger" id="recordBtn">⏺ Record</button>
+      <button class="btn btn-secondary" id="stopBtn" disabled>⏹ Stop</button>
+      <br />
+      <audio id="audioPreview" controls></audio>
 
-  <!-- Upload form posts to /predict -->
-  <form action="/predict" method="POST" enctype="multipart/form-data">
+      <form id="recordForm" method="POST" action="/predict" enctype="multipart/form-data" style="margin-top: 10px;">
+      
     <label>
       Select a file:
       <!-- 🟢 FIXED: Add accept="audio/*" to show all audio files in dialog -->
       <input type="file" name="audio_file" accept=".wav,.webm,audio/*" required>
     </label>
     <button type="submit">Upload & Analyze</button>
-  </form>
+      </form>
+    </div>
+  
 
-  <hr>
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
 
-  <!-- In-browser recorder -->
-  <h2>Or Record
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const audioPreview = document.getElementById("audioPreview");
+    const recordedAudioInput = document.getElementById("recordedAudio");
+
+    recordBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPreview.src = audioUrl;
+
+        const file = new File([audioBlob], "recorded_audio.webm", { type: "audio/webm" });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        recordedAudioInput.files = dataTransfer.files;
+        uploadBtn.disabled = false;
+      };
+
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+  </script>
+</body>
+</html>
