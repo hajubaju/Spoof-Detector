@@ -1,47 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Deepfake Detection Result</title>
-  <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
-    .result-box {
-      padding: 1.5rem;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 1.2rem;
-    }
-    .real {
-      background-color: #e0ffe0;
-      border: 2px solid #00b300;
-      color: #006600;
-    }
-    .fake {
-      background-color: #ffe0e0;
-      border: 2px solid #cc0000;
-      color: #990000;
-    }
-    .confidence {
-      font-size: 0.95rem;
-      margin-top: 0.5rem;
-      color: #555;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Analysis Result</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <h1>Prediction Result</h1>
-
-  {% if label %}
-    <div class="result-box {% if label == 'Fake' %}fake{% else %}real{% endif %}">
-      <strong>This audio is detected as: {{ label }}</strong>
-      <div class="confidence">Confidence: {{ confidence }}%</div>
+  <div class="container text-center mt-5">
+    <h2>🔍 Prediction Result</h2>
+    <div class="alert alert-info mt-4">
+      <strong>{{ label }}</strong><br>
+      Confidence: <strong>{{ confidence }}%</strong>
     </div>
-  {% else %}
-    <p class="error">No result available.</p>
-  {% endif %}
-
-  <p style="margin-top: 2rem;">
-    <a href="/">← Go Back</a>
-  </p>
+    <a href="/" class="btn btn-secondary mt-3">Try Another</a>
+  </div>
 </body>
 </html>
