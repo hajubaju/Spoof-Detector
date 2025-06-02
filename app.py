@@ -287,7 +287,7 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB limit
 # --- Load Model and Scaler ---
 #MODEL_PATH = BASE_DIR / "dnn_model" / "ASVSpoof_2021_add_2022_audio_model_v2.h5"
 #SCALER_PATH = BASE_DIR / "dnn_model" / "scaler.pkl(1)"
-MODEL_PATH   = BASE_DIR / "Model"/"ASVSpoof 2021+add_2022_audio_model_v2.h5"
+MODEL_PATH   = BASE_DIR / "Model"/"ASVSpoof 2021+add 2022_audio_model_v2.h5"
 SCALER_PATH = BASE_DIR / "Model"/"scaler.pkl"
 try:
     model = load_model(MODEL_PATH)
