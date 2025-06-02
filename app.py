@@ -285,9 +285,10 @@ app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB limit
 
 # --- Load Model and Scaler ---
-MODEL_PATH = BASE_DIR / "dnn_model" / "ASVSpoof_2021_add_2022_audio_model_v2.h5"
-SCALER_PATH = BASE_DIR / "dnn_model" / "scaler.pkl(1)"
-
+#MODEL_PATH = BASE_DIR / "dnn_model" / "ASVSpoof_2021_add_2022_audio_model_v2.h5"
+#SCALER_PATH = BASE_DIR / "dnn_model" / "scaler.pkl(1)"
+MODEL_PATH   = BASE_DIR / "model"/"ASVSpoof_2021_add_2022_audio_model_v2.h5"
+SCALER_PATH = BASE_DIR / "model"/"scaler.pkl"
 try:
     model = load_model(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
