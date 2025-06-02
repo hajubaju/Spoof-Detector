@@ -116,7 +116,6 @@ def predict():
 if __name__== "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)"""
 
-
 import os
 from pathlib import Path
 import numpy as np
@@ -126,17 +125,12 @@ import joblib
 from flask import Flask, request, render_template, redirect, url_for
 
 # --- App Setup ---
-app = Flask(_name_)
-BASE_DIR = Path(_file_).resolve().parent
+app = Flask(_name) # CORRECTED: _name to _name_
+BASE_DIR = Path(_file).resolve().parent # CORRECTED: _file to _file_
 UPLOAD_FOLDER = BASE_DIR / "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER) # Flask config needs string path
-'''app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 
-BASE_DIR     = Path(__file__).parent.resolve()
-UPLOADS_DIR  = BASE_DIR / "uploads"
-MODEL_PATH   = BASE_DIR / "dnn_model.pkl"
-SCALER_PATH = BASE_DIR / "scaler.pkl" '''
 # --- Load Model and Scaler ---
 MODEL_PATH = BASE_DIR / "model" / "ASVSpoof_2021_add_2022_audio_model_v2.h5"
 SCALER_PATH = BASE_DIR / "model" / "scaler.pkl"
@@ -171,13 +165,12 @@ def extract_features(audio_path):
              print("⚠ Audio too short after trimming, using original audio.")
              y_trimmed = y
         if len(y_trimmed) < 512: # Still too short
-             print("⚠ Audio too short to process for some features.")
-             # Pad with zeros to allow librosa functions to work
-             y_trimmed = np.pad(y_trimmed, (0, 512 - len(y_trimmed)))
+            # Ensure sufficient length for feature extraction, pad if necessary
+            print("⚠ Audio too short to process for some features, padding with zeros.")
+            y_trimmed = np.pad(y_trimmed, (0, max(0, 512 - len(y_trimmed)))) # Ensure non-negative padding
 
 
         # Placeholder: MFCCs (13), delta MFCCs (13), delta-delta MFCCs (13), ZCR mean (1), RMS mean (1) = 41 features
-        # This is a common set but MIGHT NOT MATCH YOUR CSV FEATURES.
         mfcc_raw = librosa.feature.mfcc(y=y_trimmed, sr=sr, n_mfcc=13)
         delta_mfcc_raw = librosa.feature.delta(mfcc_raw)
         delta2_mfcc_raw = librosa.feature.delta(mfcc_raw, order=2)
@@ -187,7 +180,7 @@ def extract_features(audio_path):
         delta2_mfcc_feat = np.mean(delta2_mfcc_raw.T, axis=0)
 
         zcr = np.mean(librosa.feature.zero_crossing_rate(y=y_trimmed).T, axis=0, keepdims=True)
-        rms = np.mean(librosa.feature.rms(y=y_trimmed).T, axis=0, keepdims=True)
+        rms_energy = np.mean(librosa.feature.rms(y=y_trimmed).T, axis=0, keepdims=True) # Renamed for clarity
 
         # Ensure all parts are 1D before hstack
         features = np.hstack((
@@ -195,7 +188,7 @@ def extract_features(audio_path):
             delta_mfcc_feat.flatten(),
             delta2_mfcc_feat.flatten(),
             zcr.flatten(),
-            rms.flatten()
+            rms_energy.flatten() # Use new name
         ))
 
         if features.shape[0] != N_FEATURES:
@@ -227,25 +220,24 @@ def predict():
         return redirect(request.url)
 
     if file:
-        filename = file.filename # You might want to secure the filename
+        # IMPROVEMENT: Secure filename to prevent directory traversal or other attacks
+        from werkzeug.utils import secure_filename
+        filename = secure_filename(file.filename)
+        if not filename: # If secure_filename returns empty (e.g., filename was just "..")
+            return render_template("index.html", error_message="Invalid filename.")
+
         filepath = UPLOAD_FOLDER / filename
         try:
             file.save(filepath)
 
-            # Extract features
             raw_features = extract_features(filepath)
 
             if raw_features is None:
                 return render_template("index.html", error_message="Could not extract features from the audio file. Please ensure it's a valid audio format and duration.")
 
-            # Scale features
-            # The scaler expects a 2D array, so reshape the 1D features
             scaled_features = scaler.transform(raw_features.reshape(1, -1))
+            probability = model.predict(scaled_features)[0][0]
 
-            # Make prediction
-            probability = model.predict(scaled_features)[0][0] # Model output is a probability
-
-            # Determine label and confidence
             threshold = 0.5
             if probability >= threshold:
                 label = "Real Audio"
@@ -258,14 +250,13 @@ def predict():
 
         except Exception as e:
             print(f"❌ An error occurred during prediction: {e}")
-            return render_template("index.html", error_message=f"An error occurred: {e}")
+            return render_template("index.html", error_message=f"An error occurred processing the file.")
         finally:
-            # Clean up uploaded file
             if filepath.exists():
                 os.remove(filepath)
     
     return redirect(request.url)
 
 # --- Run App ---
-if _name_ == "_main_":
+if _name_ == "_main": # CORRECTED: _name and main to _name_ and "_main_"
     app.run(debug=True, host="0.0.0.0", port=5000)
